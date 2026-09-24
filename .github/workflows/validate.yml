@@ -12,15 +12,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.x"
-
-      - name: Install PyYAML
-        run: python3 -m pip install --quiet pyyaml
-
       - name: Validate catalog.yaml
-        run: python3 validate.py
+        run: |
+          python3 -m pip install --quiet pyyaml
+          python3 validate.py
 
       - name: Bash syntax check signing scripts
-        run: for f in auth/*.sh; do bash -n "$f"; echo "ok: $f"; done
+        run: |
+          set -e
+          for f in auth/*.sh; do
+            bash -n "$f"
+            echo "ok: $f"
+          done
