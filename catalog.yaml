@@ -24,7 +24,7 @@
 #
 # Preset fields
 #   name            Short id used on the command line. Must be unique.
-#   display_name    Human-readable title shown by `restie presets`.
+#   display_name    Human-readable title for the platform (not the CLI id).
 #   description     One-line summary shown by `restie presets`.
 #   openapi_url     Where `restie generate <name>` fetches the OpenAPI spec.
 #                   Required for spec-based presets; omit for raw-only ones.
