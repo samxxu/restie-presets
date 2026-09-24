@@ -1,0 +1,209 @@
+# =============================================================================
+# RESTie preset catalog
+#
+# This file is the authoritative list of platforms RESTie can generate configs
+# for. It is DATA. The RESTie binary ships no presets of its own; it fetches this
+# file over raw.githubusercontent and turns each entry into a site config:
+#
+#   restie presets update
+#   restie presets update --repo https://raw.githubusercontent.com/<user>/restie-presets/<branch>
+#
+# Editing this file is how a platform is added, re-pointed or removed. Updating
+# presets never requires a RESTie release, which is the whole point: platform
+# APIs and their auth change far more often than the client does.
+#
+# Schema
+#   schema_version  Format version of this file. RESTie refuses a catalog whose
+#                   version it does not understand rather than misreading it.
+#                   Raise it only for changes an older build would read wrongly.
+#   scripts         Signing scripts `presets update` fetches alongside this file.
+#                   Paths are relative, must not be absolute, must not contain
+#                   '..'. Every script referenced by a preset below must be
+#                   listed here (or be that preset's own auth.command).
+#   presets         The platform entries.
+#
+# Preset fields
+#   name            Short id used on the command line. Must be unique.
+#   display_name    Human-readable title shown by `restie presets`.
+#   description     One-line summary shown by `restie presets`.
+#   openapi_url     Where `restie generate <name>` fetches the OpenAPI spec.
+#                   Required for spec-based presets; omit for raw-only ones.
+#   base_url        Default request host, written into the generated site config.
+#                   Required for raw-only (script-auth) presets, where there is
+#                   no spec to derive the host from.
+#   auth            Defaults injected into the generated site config.
+#     type          bearer_token | api_key | custom_header | script | none
+#     token_env     Env var holding the token (simple auth types).
+#     header        Header name (api_key / custom_header / bearer_token).
+#     prefix        Value prefix, e.g. "Bearer".
+#     command       Relative script path, for `type: script`.
+#     env           Variable NAMES the script receives. Values must be ${VAR}
+#                   indirections resolved from the user's own environment.
+#                   NEVER put a secret value in this file.
+# =============================================================================
+
+schema_version: 1
+
+scripts:
+  - auth/aws-sigv4.sh
+  - auth/aliyun-sign.sh
+  - auth/tencent-sign.sh
+
+presets:
+  # ---------------------------------------------------------------------------
+  # Spec-based platforms: auth is a token or header, and the command tree is
+  # generated from the official OpenAPI spec.
+  # ---------------------------------------------------------------------------
+
+  - name: github
+    display_name: GitHub REST API
+    openapi_url: https://raw.githubusercontent.com/github/rest-api-description/main/descriptions/api.github.com/api.github.com.json
+    description: GitHub's official REST API
+    auth:
+      type: bearer_token
+      token_env: GITHUB_TOKEN
+
+  - name: gitlab
+    display_name: GitLab API v4
+    openapi_url: https://gitlab.com/gitlab-org/gitlab/-/raw/master/doc/api/openapi/openapi_v3.yaml
+    description: GitLab Community/Enterprise Edition API
+    auth:
+      type: custom_header
+      token_env: GITLAB_TOKEN
+      header: PRIVATE-TOKEN
+
+  - name: stripe
+    display_name: Stripe API
+    openapi_url: https://raw.githubusercontent.com/stripe/openapi/master/openapi/spec3.json
+    description: Stripe payment platform API
+    auth:
+      type: bearer_token
+      token_env: STRIPE_SECRET_KEY
+
+  - name: openai
+    display_name: OpenAI API
+    openapi_url: https://raw.githubusercontent.com/openai/openai-openapi/master/openapi.yaml
+    description: OpenAI platform API (GPT, DALL-E, Whisper, etc.)
+    auth:
+      type: bearer_token
+      token_env: OPENAI_API_KEY
+
+  - name: digitalocean
+    display_name: DigitalOcean API v2
+    openapi_url: https://raw.githubusercontent.com/digitalocean/openapi/main/specification/DigitalOcean-public.v2.yaml
+    description: DigitalOcean cloud API
+    auth:
+      type: bearer_token
+      token_env: DIGITALOCEAN_TOKEN
+
+  - name: twilio
+    display_name: Twilio API
+    openapi_url: https://raw.githubusercontent.com/twilio/twilio-oai/main/spec/json/twilio_api_v2010.json
+    description: Twilio communication API
+    auth:
+      type: api_key
+      token_env: TWILIO_AUTH_TOKEN
+
+  - name: vultr
+    display_name: Vultr API v2
+    openapi_url: https://raw.githubusercontent.com/vultr/vultr-mcp/main/openapi.json
+    description: Vultr cloud infrastructure API
+    auth:
+      type: bearer_token
+      token_env: VULTR_API_KEY
+
+  - name: jira
+    display_name: Atlassian Jira Cloud REST API
+    openapi_url: https://developer.atlassian.com/cloud/jira/platform/swagger-v3.v3.json
+    description: Atlassian Jira Cloud issue tracking API
+    auth:
+      type: bearer_token
+      token_env: JIRA_API_TOKEN
+
+  - name: bitbucket
+    display_name: Bitbucket Cloud REST API
+    openapi_url: https://developer.atlassian.com/cloud/bitbucket/swagger.v3.json
+    description: Bitbucket Cloud Git hosting API
+    auth:
+      type: bearer_token
+      token_env: BITBUCKET_TOKEN
+
+  - name: square
+    display_name: Square Connect API
+    openapi_url: https://raw.githubusercontent.com/square/connect-api-specification/master/api.json
+    description: Square commerce and payments API
+    auth:
+      type: bearer_token
+      token_env: SQUARE_TOKEN
+
+  - name: paypal
+    display_name: PayPal REST API (Orders)
+    openapi_url: https://raw.githubusercontent.com/paypal/paypal-rest-api-specifications/main/openapi/checkout_orders_v2.json
+    description: PayPal Checkout Orders API
+    auth:
+      type: bearer_token
+      token_env: PAYPAL_TOKEN
+
+  - name: discord
+    display_name: Discord HTTP API
+    openapi_url: https://raw.githubusercontent.com/discord/discord-api-spec/main/specs/openapi.json
+    description: Discord bot and user API
+    auth:
+      type: bearer_token
+      token_env: DISCORD_BOT_TOKEN
+
+  - name: slack
+    display_name: Slack Web API
+    openapi_url: https://raw.githubusercontent.com/slackapi/slack-api-specs/master/web-api/slack_web_openapi_v2.json
+    description: Slack messaging and collaboration API
+    auth:
+      type: bearer_token
+      token_env: SLACK_TOKEN
+
+  # ---------------------------------------------------------------------------
+  # Raw-only platforms: no single unified OpenAPI spec, and requests are signed
+  # by a script instead of a bearer token. `restie generate <name>` writes only
+  # site + auth (no commands); call them in raw mode.
+  #
+  # These are the ones that change most often, which is why they are here rather
+  # than baked into the client.
+  # ---------------------------------------------------------------------------
+
+  - name: aws
+    display_name: AWS (Signature v4)
+    base_url: https://ec2.us-east-1.amazonaws.com
+    description: AWS APIs signed with SigV4 (EC2 by default; set AWS_SERVICE)
+    auth:
+      type: script
+      command: auth/aws-sigv4.sh
+      env:
+        AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+        AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+        AWS_REGION: ${AWS_REGION}
+        AWS_SERVICE: ${AWS_SERVICE}
+
+  - name: aliyun
+    display_name: Alibaba Cloud
+    base_url: https://ecs.aliyuncs.com
+    description: Alibaba Cloud APIs in raw mode (HMAC-SHA1 request signing)
+    auth:
+      type: script
+      command: auth/aliyun-sign.sh
+      env:
+        # The script reads its own names; map them from the conventional
+        # Alibaba Cloud SDK variables so either naming works for the user.
+        ALIYUN_ACCESS_KEY_ID: ${ALIBABA_CLOUD_ACCESS_KEY_ID}
+        ALIYUN_ACCESS_KEY_SECRET: ${ALIBABA_CLOUD_ACCESS_KEY_SECRET}
+
+  - name: tencent
+    display_name: Tencent Cloud
+    base_url: https://cvm.tencentcloudapi.com
+    description: Tencent Cloud APIs in raw mode (TC3-HMAC-SHA256 signing)
+    auth:
+      type: script
+      command: auth/tencent-sign.sh
+      env:
+        TENCENTCLOUD_SECRET_ID: ${TENCENTCLOUD_SECRET_ID}
+        TENCENTCLOUD_SECRET_KEY: ${TENCENTCLOUD_SECRET_KEY}
+        TENCENTCLOUD_SERVICE: cvm
+        TENCENTCLOUD_REGION: ap-beijing
